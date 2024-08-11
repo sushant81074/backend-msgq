@@ -2,6 +2,9 @@ const app = require("express")();
 const { json, urlencoded } = require("express");
 const cors = require("cors");
 const env = require("dotenv");
+const { dbConnect } = require("./db");
+
+dbConnect();
 
 app.use(cors({ origin: "*" }));
 env.config({ path: "./secret.env" });
