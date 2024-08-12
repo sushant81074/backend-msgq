@@ -2,12 +2,14 @@ const app = require("express")();
 const { json, urlencoded } = require("express");
 const cors = require("cors");
 const env = require("dotenv");
-const { dbConnect } = require("./db");
+const { dbConnect } = require("./db/index");
+
+// require("");
 
 dbConnect();
 
 app.use(cors({ origin: "*" }));
-env.config({ path: "./secret.env" });
+env.config({ path: "./local.env" });
 app.use(json());
 app.use(urlencoded({ extended: true }));
 
