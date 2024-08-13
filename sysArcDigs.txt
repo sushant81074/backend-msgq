@@ -1,0 +1,145 @@
+## system architecture diagram
+
++----------------+           +-----------------+           +---------------------+
+|    Clients     |  <----->  |     Server      |  <----->  |    Queue Manager    |
+| (User Interface)|           | (Authentication,|           | (Queue Management)  |
+|                |           |  Request Handling)|          |                     |
++----------------+           +-----------------+           +---------------------+
+                                 |                           |
+                                 |                           |
+                                 |                           |
+                                 V                           V
+                        +-----------------+           +----------------+
+                        |     Worker      |  <----->  |    Database    |
+                        |    Processes    |           | (PostgreSQL /  |
+                        | (Request Handling)          |   MongoDB)     |
+                        +-----------------+           +----------------+
+                                 ^
+                                 |
+                                 |
+                                 V
+                        +----------------+
+                        | Messaging/Queue|
+                        | System (RabbitMQ|
+                        | / Redis / Kafka)|
+                        +----------------+
+
+
+## system flow diagram
+
++----------------+      +-------------------+      +-------------------+
+|   Client       |      |    Server         |      |    Queue Manager  |
+| (Request Sends)| ---> | (Authenticates &   | ---> | (Manages Queues)  |
+|                |      |  Forwards Requests)|      +-------------------+
++----------------+      +-------------------+               |
+                                                            |
+                                                            |
+                                                            V
+                                                  +--------------------+
+                                                  |     Worker         |
+                                                  |     Processes      |
+                                                  | (Processes Requests)|
+                                                  +--------------------+
+                                                            |
+                                                            |
+                                                            V
+                                                 +---------------------+
+                                                 |    Database         |
+                                                 |  (Stores Results)   |
+                                                 +---------------------+
+
+
+## detailed process flow diagram
+
++-------------------+
+|    Client         |
+| (Request Sends)   |
++-------------------+
+          |
+          V
++-------------------+
+|    Server         |
+| (Authenticate)    |
+| (Forward Request) |
++-------------------+
+          |
+          V
++-------------------+
+|   Queue Manager   |
+| (Create/Update    |
+|   Queues)         |
++-------------------+
+          |
+          V
++-------------------+
+|   Queue           |
+| (Store Requests)  |
++-------------------+
+          |
+          V
++-------------------+
+|   Worker Process  |
+| (Fetch/Process    |
+|   Requests)       |
++-------------------+
+          |
+          V
++-------------------+
+|   Database        |
+| (Store Results)   |
++-------------------+
+          |
+          V
++-------------------+
+|    Client         |
+| (Receive Response)|
++-------------------+
+
+
+## data flow diagram
+
++----------------+          +-----------------+          +------------------+
+|    Users       |   --->   | Flow Distribution|   --->   |    Astrologers   |
+| (Request Access)|         |  Algorithm       |         | (Receive Users)  |
++----------------+          +-----------------+          +------------------+
+                              |
+                              |
+                              V
+                     +---------------------+
+                     |    Flow Settings    |
+                     | (Adjust Flow for    |
+                     |   Top Astrologers)  |
+                     +---------------------+
+
+
+## detailed process flow diagram
+
++-------------------+
+|    User Request   |
+| (Submit Request)  |
++-------------------+
+          |
+          V
++-------------------+
+| Flow Distribution |
+|   Algorithm       |
+| (Fair Distribution)|
++-------------------+
+          |
+          V
++-------------------+
+| Adjust Flow       |
+| (Top Astrologers) |
++-------------------+
+          |
+          V
++-------------------+
+|   Astrologer      |
+| (Receive User)    |
++-------------------+
+          |
+          V
++-------------------+
+|    User           |
+| (Connection Made) |
++-------------------+
