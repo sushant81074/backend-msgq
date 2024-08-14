@@ -110,4 +110,25 @@ const signIn = async (req, res) => {
   }
 };
 
-module.exports = { signIn };
+const signOut = async (req, res) => {
+  try {
+    if (!req.user || !req.user?._id)
+      throw new ApiError(401, "unauthorised user");
+
+    // call for queues to get resolved and destroyed ::::: ========>
+    // this is not a good practice as the requests in the queue aren't resolved yet but we'll se about that later
+
+    return res
+      .clearCookie("accessToken", options)
+      .status(200)
+      .send(new ApiResponse(200, {}, "user logged out successfully"));
+  } catch (error) {
+    console.error("error occured", error?.message);
+
+    return res
+      .status(error?.statusCode || 500)
+      .send(new ApiError(error?.statusCode || 500, error?.message));
+  }
+};
+
+module.exports = { signIn, signOut };
