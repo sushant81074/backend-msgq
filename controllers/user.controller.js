@@ -5,6 +5,8 @@ const { fieldValidator } = require("../utils/fieldValidator");
 
 const User = require("../models/user.model");
 const { EntityId } = require("redis-om");
+const { createQueue } = require("../queues/producer.queue");
+const { createWorker } = require("../workers/process.worker");
 
 const options = {
   httpOnly: true,
@@ -66,8 +68,6 @@ const signIn = async (req, res) => {
       if (!userExists) throw new ApiError(500, "unable to sign-in user");
     }
 
-    // TODO : create a specific queue for user
-
     let accessToken = await userExists.generateAccessToken();
 
     let usrEntity = await userRepository.save({
@@ -78,6 +78,18 @@ const signIn = async (req, res) => {
     });
 
     await userRepository.expire(usrEntity[EntityId], 60);
+
+    // create a producer and worker queue
+
+    let result = createQueue(userExists._id);
+    console.log(result.name, result.qualifiedName);
+
+    result = createWorker(result);
+    console.log(result);
+    console.log(result.name, result.qualifiedName, "result.id : " + result.id);
+
+    // result.id  532f7111-aa73-47b5-856f-20df76991f88
+    // result.id  db944593-eaec-4a03-9703-522a4128831b
 
     return res
       .cookie("accessToken", accessToken, options)
