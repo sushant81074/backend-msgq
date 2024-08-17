@@ -6,9 +6,33 @@ let connection = {
 };
 
 function createWorker(queue) {
-  return new Worker(`worker-${queue.name}`, async (job) => console.log(job), {
-    connection,
+  let worker = new Worker(
+    `${queue.name}`,
+    async (job) => console.log("job=======", job.id),
+    {
+      connection,
+    }
+  );
+
+  worker.on("active", async (job) =>
+    console.log("job of worker", job.debounceId)
+  );
+  worker.on("completed", async (job) => {
+    console.log("job status", {
+      a: await job.isActive(),
+      c: await job.isCompleted(),
+      d: await job.isDelayed(),
+      f: await job.isFailed(),
+      w: await job.isWaiting(),
+      data: job.data,
+      id: job.id,
+      workerid: worker.id,
+    });
+
+    console.log("j.r----------------------------", await job.remove());
   });
+
+  return worker;
 }
 
 module.exports = { createWorker };

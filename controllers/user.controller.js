@@ -5,7 +5,7 @@ const { fieldValidator } = require("../utils/fieldValidator");
 
 const User = require("../models/user.model");
 const { EntityId } = require("redis-om");
-const { createQueue } = require("../queues/producer.queue");
+const { createQueue, addJob } = require("../queues/producer.queue");
 const { createWorker } = require("../workers/process.worker");
 
 const options = {
@@ -79,18 +79,6 @@ const signIn = async (req, res) => {
 
     await userRepository.expire(usrEntity[EntityId], 60);
 
-    // create a producer and worker queue
-
-    let result = createQueue(userExists._id);
-    console.log(result.name, result.qualifiedName);
-
-    result = createWorker(result);
-    console.log(result);
-    console.log(result.name, result.qualifiedName, "result.id : " + result.id);
-
-    // result.id  532f7111-aa73-47b5-856f-20df76991f88
-    // result.id  db944593-eaec-4a03-9703-522a4128831b
-
     return res
       .cookie("accessToken", accessToken, options)
       .status(200)
@@ -101,6 +89,41 @@ const signIn = async (req, res) => {
           "user sign-in successful"
         )
       );
+  } catch (error) {
+    console.error("error occured", error?.message);
+
+    return res
+      .status(error?.statusCode || 500)
+      .send(new ApiError(error?.statusCode || 500, error?.message));
+  }
+};
+
+const requestJob = async (req, res) => {
+  try {
+    if (!req.user || !req.user?._id)
+      throw new ApiError(401, "unauthorised user");
+
+    const { job } = req.body;
+
+    let processQue = createQueue(req.user?._id);
+    console.log(processQue);
+
+    addJob(processQue, job);
+
+    let workerQue = createWorker(processQue);
+    console.log("workerQue---------", workerQue.id);
+
+    return res.status(200).send(
+      new ApiResponse(
+        200,
+        {
+          pq: processQue.name,
+          wq: workerQue.name,
+          wqId: workerQue.id,
+        },
+        "process and worker ques created and job assigned"
+      )
+    );
   } catch (error) {
     console.error("error occured", error?.message);
 
@@ -131,4 +154,16 @@ const signOut = async (req, res) => {
   }
 };
 
-module.exports = { signIn, signOut };
+module.exports = { signIn, requestJob, signOut };
+
+// create a producer and worker queue
+
+//  let result = createQueue(userExists._id);
+//  console.log(result.name, result.qualifiedName);
+
+//  result = createWorker(result);
+//  console.log(result);
+//  console.log(result.name, result.qualifiedName, "result.id : " + result.id);
+
+// result.id  532f7111-aa73-47b5-856f-20df76991f88
+// result.id  db944593-eaec-4a03-9703-522a4128831b
