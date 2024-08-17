@@ -6,14 +6,17 @@ const redisClient = Redis.createClient({
 
 redisClient
   .connect()
-  .then(() => console.log("redis to connected"))
+  .then(() => console.log("connected to redis"))
   .catch((e) =>
     console.error("error occured during connecting to redis", e?.message)
   );
 
 // (async () => {
-//   for (let i = 0; i < 11; i++) {
-//     let res = await redisClient.expire("bull:user-undefined:" + i, 0);
+//   for (let i = 0; i < 100; i++) {
+//     let res = await redisClient.del(
+//       "bull:process-66c0d28fe139fd358ab8dc7f:5" + i,
+//       0
+//     );
 //     console.log(res);
 //   }
 // })();

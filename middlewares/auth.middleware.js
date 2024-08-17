@@ -7,7 +7,7 @@ const auth = async (req, res, next) => {
       req.cookies?.accessToken ||
       req.header("Authorization")?.replace("Bearer ", "");
 
-    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET_KEY);
+    const payload = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
     if (!payload) {
       return res.status(401).json({
