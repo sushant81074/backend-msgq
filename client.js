@@ -13,10 +13,7 @@ redisClient
 
 // (async () => {
 //   for (let i = 0; i < 100; i++) {
-//     let res = await redisClient.del(
-//       "bull:process-66c0d28fe139fd358ab8dc7f:5" + i,
-//       0
-//     );
+//     let res = await redisClient.expire("bull:hula" + i, 0);
 //     console.log(res);
 //   }
 // })();

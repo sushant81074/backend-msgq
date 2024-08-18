@@ -1,4 +1,6 @@
 const { Worker } = require("bullmq");
+const fs = require("fs");
+const path = require("path");
 
 let connection = {
   port: 6379,
@@ -8,7 +10,18 @@ let connection = {
 function createWorker(queue) {
   let worker = new Worker(
     `${queue.name}`,
-    async (job) => console.log("job=======", job.id),
+    async (job) => {
+      console.log("job=======", job.id, "job data =======", job.data);
+
+      fs.appendFile(
+        path.join(__dirname + "/result.txt"),
+        JSON.stringify({ id: job.id, data: job.data }) + "\n",
+        "utf-8",
+        (err) => {
+          console.log("error ", err?.message);
+        }
+      );
+    },
     {
       connection,
     }
